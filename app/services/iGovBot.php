@@ -9,8 +9,6 @@ class iGovBot extends TinyBot{
     function search($params) {
         global $di;
 
-        //TODO PDO only, fuck the ORM
-
         $connection=$di->get('pdoconnecton');
         $cache=$di->get('modelsCache');
 
@@ -30,17 +28,15 @@ class iGovBot extends TinyBot{
         if (mb_strlen($input,'UTF-8')<=2) return array('state'=>'default', 'message'=>'Поиск работает от 3 символов и больше');
         if ((is_numeric($input)) AND (mb_strlen($input,'UTF-8')==8)) {
 
-            $legal =  LegalEntities::findFirst(array('code='.$input, "cache" => array("key"=> md5("code".$input), "lifetime" => 86400 )));
-            if ($legal) {
-                $message="По коду <b>".$input."</b> найдена компания \n\n".$this->showCompaniesList(array($legal));
-
-
+            $sql="SELECT * FROM legal_entities WHERE code=".$input;
+            $res = $connection->query($sql);
+            if ($r=$res->fetch()) {
+                $message="По коду <b>".$input."</b> найдена компания \n\n".$this->showCompaniesList(array($r));
             }
 
 
         } else {
-
-            $sql="SELECT COUNT(*) AS cs FROM legal_entities WHERE full_name LIKE '%".$input."%'";
+            $sql="SELECT COUNT(*) AS cs FROM legal_entities WHERE full_name LIKE ".$connection->escapeString('%'.$input.'%');
             $msql=md5($sql);
             $lc=$cache->get($msql);
             if ($lc===null) {
@@ -51,23 +47,33 @@ class iGovBot extends TinyBot{
             }
 
 
+
             if ($lc>0) {
 
-                $legals=LegalEntities::find(array("full_name LIKE '%".$input."%'", "cache" => array("key"=> md5("legal".$input), "lifetime" => 86400),'limit'=>10));
-                $count=$legals->count();
+                $sql="SELECT * FROM legal_entities WHERE full_name LIKE ".$connection->escapeString('%'.$input.'%')." ORDER BY code  LIMIT 10 ";
+                $msql=md5($sql);
+                $rows=$cache->get($msql);
+                if ($rows===null) {
+                    $rows=array();
+                    $res = $connection->query($sql);
+                    while ($r=$res->fetch()) {
+                        $rows[]=$r;
+                    }
+                    $cache->save($msql, $rows);
+                }
 
                 $message="По названию <b>".$input."</b> найдено компаний — ". $lc."\n\n";
                 if ($lc>10) {
                     $message.="Показываем первые 10 \n\n";
                 }
 
-                $message.=$this->showCompaniesList($legals);
+                $message.=$this->showCompaniesList($rows);
             } else {
                 //ищем по имени директора
 
 
 
-                $sql="SELECT COUNT(*) AS cs FROM legal_entities WHERE ceo_name  LIKE '".$input."%'";
+                $sql="SELECT COUNT(*) AS cs FROM legal_entities WHERE ceo_name  LIKE ".$connection->escapeString($input.'%');
                 $msql=md5($sql);
                 $lc=$cache->get($msql);
                 if ($lc===null) {
@@ -80,14 +86,25 @@ class iGovBot extends TinyBot{
 
                 if ($lc>0) {
 
-                    $legals=LegalEntities::find(array("ceo_name LIKE '".$input."%'", "cache" => array("key"=> md5("ceo".$input), "lifetime" => 86400), 'limit'=>10 ));
-                    $count=$legals->count();
+                    $sql="SELECT * FROM legal_entities WHERE ceo_name LIKE ".$connection->escapeString($input.'%')." ORDER BY code  LIMIT 10 ";
+                    $msql=md5($sql);
+                    $rows=$cache->get($msql);
+                    if ($rows===null) {
+                        $rows=array();
+                        $res = $connection->query($sql);
+                        while ($r=$res->fetch()) {
+                            $rows[]=$r;
+                        }
+                        $cache->save($msql, $rows);
+                    }
 
                     $message = "По имени директора <b>".$input."</b> найдено компаний — " . $lc . "\n\n";
-                    if ($lc > 10) {
-                        $message .= "Показываем первые 10 \n\n";
+                    if ($lc>10) {
+                        $message.="Показываем первые 10 \n\n";
                     }
-                    $message.=$this->showCompaniesList($legals);
+
+                    $message.=$this->showCompaniesList($rows);
+
                 }
 
 
@@ -105,6 +122,7 @@ class iGovBot extends TinyBot{
         return array('state'=>'default', 'message'=>$message);
     }
 
+
     function showCompaniesList($list, $maxcount=10)
     {
 
@@ -113,12 +131,12 @@ class iGovBot extends TinyBot{
 
         for ($i = 0; $i < $count; $i++) {
 
-            $result[] = '<b>' . $list[$i]->full_name . '</b>' . "\n" .
-                '<i>Код:</i> ' . $list[$i]->code . "\n" .
-                '<i>Адрес:</i> ' . $list[$i]->location . "\n" .
-                '<i>Директор:</i> ' . $list[$i]->ceo_name . "\n" .
-                '<i>Вид деятельности:</i> ' . $list[$i]->activities . "\n" .
-                '<i>Состояние:</i> ' . $list[$i]->status . "\n";
+            $result[] = '<b>' . $list[$i]['full_name'] . '</b>' . "\n" .
+                '<i>Код:</i> ' . $list[$i]['code'] . "\n" .
+                '<i>Адрес:</i> ' . $list[$i]['location'] . "\n" .
+                '<i>Директор:</i> ' . $list[$i]['ceo_name'] . "\n" .
+                '<i>Вид деятельности:</i> ' . $list[$i]['activities'] . "\n" .
+                '<i>Состояние:</i> ' . $list[$i]['status'] . "\n";
 
         }
         $text = implode("\n\n", $result);
