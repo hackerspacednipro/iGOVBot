@@ -16,4 +16,4 @@ curl "http://k11.dev/bot?bot_id=2&password=CNeLA6B2BGdD" -d "{\"update_id\":4605
 ######Поиск
 curl "http://k11.dev/bot?bot_id=2&password=CNeLA6B2BGdD" -d "{\"update_id\":460579724,\"message\":{\"message_id\":4,\"from\":{\"id\":88492628,\"first_name\":\"Aleksey\",\"last_name\":\"Ivankin\",\"username\":\"iva220\"},\"chat\":{\"id\":88492628,\"first_name\":\"Aleksey\",\"last_name\":\"Ivankin\",\"username\":\"iva220\",\"type\":\"private\"},\"date\":1458910208,\"text\":\"РОСТОК\"}}"
 
-в результате ваш тестовый бот выведет список компаний
+в результате ваш тестовый бот выведет список компаний по запросу РОСТОК
