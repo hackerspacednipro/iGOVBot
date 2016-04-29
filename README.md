@@ -1,5 +1,8 @@
 ##iGOVBot
-iGOVBot — открытый Telegram bot для работы с реестрами украинских компаний. Вопросы, помощь, поддержка — https://telegram.me/iva220
+iGOVBot — открытый Telegram bot для работы с реестрами украинских компаний. Наш беклог —  https://trello.com/b/7Ge4firz/igovbot
+
+Вопросы, помощь, поддержка — https://telegram.me/iva220
+
 
 ######Требования
 PHP Phalcon + MySQL
