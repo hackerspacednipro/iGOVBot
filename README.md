@@ -1,7 +1,7 @@
 ##iGOVBot
 iGOVBot — открытый Telegram bot для работы с реестрами украинских компаний. Наш беклог —  https://trello.com/b/7Ge4firz/igovbot
 
-Вопросы, помощь, поддержка — https://telegram.me/iva220
+Хотите помочь нам реализовать наш беклог — пишите нам на https://telegram.me/iva220
 
 
 ######Требования
